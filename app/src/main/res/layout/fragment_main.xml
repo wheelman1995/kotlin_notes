@@ -5,33 +5,43 @@
 
     <data>
 
-        <variable
-            name="fragment"
-            type="ru.wheelman.notes.view.fragments.MainFragment" />
-
+        <import type="android.view.View" />
         <variable
             name="viewModel"
             type="ru.wheelman.notes.viewmodel.IMainFragmentViewModel" />
+
+        <variable
+            name="adapter"
+            type="ru.wheelman.notes.view.fragments.NotesRvAdapter" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_fragment_main"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context="view.fragments.MainFragment">
+        android:layout_height="match_parent">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/button"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_notes"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:adapter="@{adapter}"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            app:spanCount="2"
+            tools:listitem="@layout/item_note" />
+
+        <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/progress_bar"
+            style="@android:style/Widget.Material.ProgressBar.Horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:onClick="@{fragment::onClick}"
-            android:text="to second"
+            android:indeterminate="false"
+            android:progress="@{viewModel.progress}"
+            android:visibility="@{viewModel.progress == 100 ? View.GONE : View.VISIBLE}"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 </layout>

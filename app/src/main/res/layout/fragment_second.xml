@@ -1,18 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<?xml version="1.0" encoding="utf-8"?><!--<layout xmlns:android="http://schemas.android.com/apk/res/android"--><!--xmlns:app="http://schemas.android.com/apk/res-auto">-->
 
-    <data>
+<!--<data>-->
 
-        <variable
-            name="fragment"
-            type="ru.wheelman.notes.view.fragments.SecondFragment" />
-    </data>
+<!--<variable--><!--name="fragment"--><!--type="ru.wheelman.notes.view.fragments.SecondFragment" />--><!--</data>-->
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_fragment_second"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cl_fragment_second"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button"
@@ -27,5 +23,4 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</layout>
+    </androidx.constraintlayout.widget.ConstraintLayout><!--</layout>-->

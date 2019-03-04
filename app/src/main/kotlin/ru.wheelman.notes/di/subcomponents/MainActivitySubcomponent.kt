@@ -10,6 +10,7 @@ import ru.wheelman.notes.view.MainActivity
 @Subcomponent(modules = [MainActivityModule::class])
 @MainActivityScope
 interface MainActivitySubcomponent {
+    fun mainFragmentSubcomponent(): MainFragmentSubcomponent.Builder
     fun inject(mainActivity: MainActivity)
 
     @Subcomponent.Builder
@@ -17,6 +18,6 @@ interface MainActivitySubcomponent {
         @BindsInstance
         fun mainActivity(mainActivity: MainActivity): Builder
 
-//        fun mainActivityModule(mainActivityModule: MainActivityModule) : Builder
+//        fun mainActivityModule(mainActivityModule: MainActivityModule): Builder
     }
 }

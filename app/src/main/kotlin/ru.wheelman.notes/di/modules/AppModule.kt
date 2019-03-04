@@ -5,8 +5,15 @@ import dagger.Module
 import dagger.Provides
 import ru.wheelman.notes.NotesApp
 import ru.wheelman.notes.di.scopes.AppScope
+import ru.wheelman.notes.di.subcomponents.MainActivitySubcomponent
+import ru.wheelman.notes.di.subcomponents.MainFragmentViewModelSubcomponent
 
-@Module
+@Module(
+    subcomponents = [
+        MainActivitySubcomponent::class,
+        MainFragmentViewModelSubcomponent::class
+    ]
+)
 class AppModule {
 
     @Provides

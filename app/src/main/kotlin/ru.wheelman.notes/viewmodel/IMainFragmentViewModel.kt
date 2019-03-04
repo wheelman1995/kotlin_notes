@@ -1,5 +1,10 @@
 package ru.wheelman.notes.viewmodel
 
+import androidx.lifecycle.LiveData
+
 interface IMainFragmentViewModel {
-    fun okButtonPressed()
+
+    fun getNotesAdapterViewModel(): INotesAdapterViewModel
+    fun getProgress(): LiveData<Int>
+
 }
