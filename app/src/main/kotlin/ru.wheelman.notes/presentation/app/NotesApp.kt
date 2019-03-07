@@ -1,13 +1,11 @@
-package ru.wheelman.notes
+package ru.wheelman.notes.presentation.app
 
 import android.app.Application
 import android.util.Log
-import ru.wheelman.notes.di.components.AppComponent
-import ru.wheelman.notes.di.components.DaggerAppComponent
+import ru.wheelman.notes.di.app.AppComponent
+import ru.wheelman.notes.di.app.DaggerAppComponent
 
-fun <T : Any> T.logd(msg: Any?) {
-    Log.d(this::class.simpleName, " $msg")
-}
+fun <T : Any> T.logd(msg: Any?) = Log.d(this::class.simpleName, " $msg")
 
 class NotesApp : Application() {
 
@@ -17,7 +15,6 @@ class NotesApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-
         initDagger()
     }
 
@@ -26,4 +23,5 @@ class NotesApp : Application() {
             .notesApp(this)
             .build()
     }
+
 }

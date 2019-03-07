@@ -1,51 +1,56 @@
 package ru.wheelman.notes.model.data
 
-import kotlinx.coroutines.channels.SendChannel
-import ru.wheelman.notes.di.scopes.MainFragmentViewModelScope
+import ru.wheelman.notes.di.app.AppScope
 import ru.wheelman.notes.model.entities.Note
+import ru.wheelman.notes.model.entities.Note.Colour
 import javax.inject.Inject
 
-@MainFragmentViewModelScope
-internal class NotesLocalDataSource @Inject constructor() : INotesDataSource {
-    override suspend fun getNotes(channel: SendChannel<Int>): List<Note> {
-        for (i in 1..100) {
-            Thread.sleep(10L)
-            channel.send(i)
+@AppScope
+class NotesLocalDataSource @Inject constructor() : INotesDataSource {
+
+    override fun getNotes(): List<Note> = notes
+    override fun getNote(noteId: String) = notes.firstOrNull { it.id == noteId }
+
+    override fun saveOrReplace(note: Note) {
+        for ((index, value) in notes.withIndex()) {
+            if (value.id == note.id) {
+                notes[index] = note
+                return
+            }
         }
-        channel.close()
-        return notes
+        notes.add(note)
     }
 
-    private val notes: List<Note> = listOf(
+    private val notes: MutableList<Note> = mutableListOf(
         Note(
-            "Первая заметка",
-            "Текст первой заметки. Не очень длинный, но интересный",
-            0xfff06292.toInt()
+            title = "Первая заметка",
+            body = "Текст первой заметки. Не очень длинный, но интересный",
+            colour = Colour.WHITE
         ),
         Note(
-            "Вторая заметка",
-            "Текст второй заметки. Не очень длинный, но интересный",
-            0xff9575cd.toInt()
+            title = "Вторая заметка",
+            body = "Текст второй заметки. Не очень длинный, но интересный",
+            colour = Colour.YELLOW
         ),
         Note(
-            "Третья заметка",
-            "Текст третьей заметки. Не очень длинный, но интересный",
-            0xff64b5f6.toInt()
+            title = "Третья заметка",
+            body = "Текст третьей заметки. Не очень длинный, но интересный",
+            colour = Colour.GREEN
         ),
         Note(
-            "Четвертая заметка",
-            "Текст четвертой заметки. Не очень длинный, но интересный",
-            0xff4db6ac.toInt()
+            title = "Четвертая заметка",
+            body = "Текст четвертой заметки. Не очень длинный, но интересный",
+            colour = Colour.BLUE
         ),
         Note(
-            "Пятая заметка",
-            "Текст пятой заметки. Не очень длинный, но интересный",
-            0xffb2ff59.toInt()
+            title = "Пятая заметка",
+            body = "Текст пятой заметки. Не очень длинный, но интересный",
+            colour = Colour.RED
         ),
         Note(
-            "Шестая заметка",
-            "Текст шестой заметки. Не очень длинный, но интересный",
-            0xffffeb3b.toInt()
+            title = "Шестая заметка",
+            body = "Текст шестой заметки. Не очень длинный, но интересный",
+            colour = Colour.VIOLET
         )
     )
 }

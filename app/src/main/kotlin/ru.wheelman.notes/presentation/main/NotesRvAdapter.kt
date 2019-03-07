@@ -1,32 +1,30 @@
-package ru.wheelman.notes.view.fragments
+package ru.wheelman.notes.presentation.main
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.recyclerview.widget.RecyclerView
 import ru.wheelman.notes.databinding.ItemNoteBinding
-import ru.wheelman.notes.logd
-import ru.wheelman.notes.view.fragments.NotesRvAdapter.ViewHolder
-import ru.wheelman.notes.viewmodel.INotesAdapterViewModel
+import ru.wheelman.notes.presentation.main.MainFragmentViewModel.NotesAdapterViewModel
+import ru.wheelman.notes.presentation.main.NotesRvAdapter.ViewHolder
 
 class NotesRvAdapter(
-    private val notesAdapterViewModel: INotesAdapterViewModel,
-    lifecycleOwner: LifecycleOwner
+    private val notesAdapterViewModel: NotesAdapterViewModel,
+    private val lifecycle: Lifecycle,
+    val onCardClickListener: ((String) -> Unit)? = null
 ) : RecyclerView.Adapter<ViewHolder>(), LifecycleObserver {
 
     init {
-        lifecycleOwner.lifecycle.addObserver(this)
+        lifecycle.addObserver(this)
         notesAdapterViewModel.subscribe { notifyDataSetChanged() }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-
         val binding = ItemNoteBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        binding.adapter = notesAdapterViewModel
-
+        binding.adapterViewModel = notesAdapterViewModel
+        binding.adapter = this
         return ViewHolder(binding)
     }
 
@@ -38,7 +36,7 @@ class NotesRvAdapter(
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     internal fun unsubscribe() {
-        logd("Lifecycle.Event.ON_DESTROY")
+        lifecycle.removeObserver(this)
         notesAdapterViewModel.unsubscribe()
     }
 

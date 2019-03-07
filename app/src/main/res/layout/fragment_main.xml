@@ -5,14 +5,13 @@
 
     <data>
 
-        <import type="android.view.View" />
         <variable
             name="viewModel"
-            type="ru.wheelman.notes.viewmodel.IMainFragmentViewModel" />
+            type="ru.wheelman.notes.presentation.main.MainFragmentViewModel" />
 
         <variable
             name="adapter"
-            type="ru.wheelman.notes.view.fragments.NotesRvAdapter" />
+            type="ru.wheelman.notes.presentation.main.NotesRvAdapter" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -28,20 +27,6 @@
             app:spanCount="2"
             tools:listitem="@layout/item_note" />
 
-        <androidx.core.widget.ContentLoadingProgressBar
-            android:id="@+id/progress_bar"
-            style="@android:style/Widget.Material.ProgressBar.Horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:indeterminate="false"
-            android:progress="@{viewModel.progress}"
-            android:visibility="@{viewModel.progress == 100 ? View.GONE : View.VISIBLE}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 
 </layout>

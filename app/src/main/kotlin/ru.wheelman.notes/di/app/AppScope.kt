@@ -1,7 +1,7 @@
-package ru.wheelman.notes.di.scopes
+package ru.wheelman.notes.di.app
 
 import javax.inject.Scope
 
 @Scope
 @Retention(AnnotationRetention.RUNTIME)
-annotation class MainFragmentScope
+annotation class AppScope

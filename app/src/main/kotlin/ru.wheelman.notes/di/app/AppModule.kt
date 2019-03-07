@@ -1,27 +1,31 @@
-package ru.wheelman.notes.di.modules
+package ru.wheelman.notes.di.app
 
+import android.content.Context
 import dagger.Binds
 import dagger.Module
-import ru.wheelman.notes.di.modules.MainFragmentViewModelModule.Binder
+import dagger.Provides
+import ru.wheelman.notes.di.app.AppModule.Binder
 import ru.wheelman.notes.model.data.INotesDataSource
 import ru.wheelman.notes.model.data.NotesLocalDataSource
 import ru.wheelman.notes.model.repositories.INotesRepository
 import ru.wheelman.notes.model.repositories.NotesRepository
-import ru.wheelman.notes.viewmodel.INotesAdapterViewModelMutable
-import ru.wheelman.notes.viewmodel.NotesAdapterViewModel
+import ru.wheelman.notes.presentation.app.NotesApp
 
 @Module(includes = [Binder::class])
-internal class MainFragmentViewModelModule {
+class AppModule {
+
+    @Provides
+    @AppScope
+    fun appContext(notesApp: NotesApp): Context = notesApp
 
     @Module
     interface Binder {
-        @Binds
-        fun notesAdapterViewModel(notesAdapterViewModel: NotesAdapterViewModel): INotesAdapterViewModelMutable
 
         @Binds
         fun notesDataSource(notesLocalDataSource: NotesLocalDataSource): INotesDataSource
 
         @Binds
         fun notesRepository(notesRepository: NotesRepository): INotesRepository
+
     }
 }

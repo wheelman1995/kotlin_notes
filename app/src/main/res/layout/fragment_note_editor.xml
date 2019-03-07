@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="viewModel"
+            type="ru.wheelman.notes.presentation.noteeditor.NoteEditorFragmentViewModel" />
+
+        <variable
+            name="textWatcher"
+            type="android.text.TextWatcher" />
+    </data>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_fragment_note_editor"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/tiet_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:afterTextChanged="@{() -> viewModel.afterTextChanged()}"
+                android:text="@={viewModel.title}"
+                tools:text="title" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/tiet_body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:afterTextChanged="@{() -> viewModel.afterTextChanged()}"
+                android:text="@={viewModel.body}"
+                tools:text="body" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</layout>
