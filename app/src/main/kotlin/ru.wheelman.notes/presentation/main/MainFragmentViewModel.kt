@@ -1,13 +1,16 @@
 package ru.wheelman.notes.presentation.main
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import ru.wheelman.notes.model.entities.Note
 import ru.wheelman.notes.model.repositories.INotesRepository
+import ru.wheelman.notes.presentation.abstraction.AbstractViewModel
 import ru.wheelman.notes.presentation.app.NotesApp
 import ru.wheelman.notes.presentation.datamappers.ColourMapper
 import javax.inject.Inject
 
-class MainFragmentViewModel : ViewModel() {
+class MainFragmentViewModel(private val app: Application) : AbstractViewModel(app) {
 
     @Inject
     internal lateinit var notesRepository: INotesRepository
@@ -17,15 +20,25 @@ class MainFragmentViewModel : ViewModel() {
 
     init {
         initDagger()
-        refreshNotes()
+        subscribeToAllNotes()
     }
 
     private fun initDagger() {
         NotesApp.appComponent.inject(this)
     }
 
-    private fun refreshNotes() {
-        val notes = notesRepository.getNotes()
+    private fun subscribeToAllNotes() {
+        viewModelScope.launch {
+            val notesChannel = notesRepository.subscribeToAllNotes()
+            while (true) {
+                val result = notesChannel.receive()
+                processResult(result)
+            }
+        }
+    }
+
+    override fun onSuccess(data: Any) {
+        val notes = data as List<Note>
         notesAdapter.setNewData(notes)
     }
 

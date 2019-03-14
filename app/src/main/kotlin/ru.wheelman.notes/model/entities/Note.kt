@@ -1,17 +1,18 @@
 package ru.wheelman.notes.model.entities
 
+import java.io.Serializable
 import java.util.*
 
 data class Note(
-    internal val id: String = UUID.randomUUID().toString(),
-    internal val title: String = String(),
-    internal val body: String = String(),
-    internal val colour: Colour = Colour.WHITE
-) {
+    val id: String = UUID.randomUUID().toString(),
+    val title: String = String(),
+    val body: String = String(),
+    val colour: Colour = Colour.WHITE
+) : Serializable {
 
-    internal var lastChanged: Date = Date()
+    var lastChanged: Date = Date()
 
-    enum class Colour {
+    enum class Colour : Serializable {
         WHITE,
         YELLOW,
         GREEN,

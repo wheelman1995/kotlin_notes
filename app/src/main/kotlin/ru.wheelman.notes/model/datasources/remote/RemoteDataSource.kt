@@ -1,10 +1,10 @@
-package ru.wheelman.notes.model.repositories
+package ru.wheelman.notes.model.datasources.remote
 
 import kotlinx.coroutines.channels.ReceiveChannel
 import ru.wheelman.notes.model.entities.Note
 import ru.wheelman.notes.model.entities.Result
 
-interface INotesRepository {
+interface RemoteDataSource {
 
     suspend fun getNoteById(noteId: String): ReceiveChannel<Result>
     suspend fun saveNote(note: Note): ReceiveChannel<Result>

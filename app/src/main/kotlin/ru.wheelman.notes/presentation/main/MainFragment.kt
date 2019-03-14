@@ -8,23 +8,22 @@ import android.view.ViewGroup
 import androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams
 import androidx.core.content.ContextCompat
 import androidx.core.view.setMargins
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import ru.wheelman.notes.R
 import ru.wheelman.notes.databinding.FragmentMainBinding
+import ru.wheelman.notes.presentation.abstraction.AbstractFragment
 import ru.wheelman.notes.presentation.activity.MainActivity
 import ru.wheelman.notes.presentation.app.NotesApp
 import ru.wheelman.notes.presentation.utils.DisplayMetricsHelper
 import javax.inject.Inject
 
-class MainFragment : Fragment() {
+class MainFragment : AbstractFragment<MainFragmentViewModel>() {
 
     @Inject
     internal lateinit var displayMetricsHelper: DisplayMetricsHelper
-    private lateinit var viewModel: MainFragmentViewModel
     private lateinit var navController: NavController
     private lateinit var notesAdapter: NotesRvAdapter
     private lateinit var mainActivity: MainActivity
@@ -32,18 +31,20 @@ class MainFragment : Fragment() {
     private val fabMargins = 16
     private lateinit var binding: FragmentMainBinding
     private lateinit var fabLayoutParams: LayoutParams
+    override lateinit var viewModel: MainFragmentViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        super.onCreateView(inflater, container, savedInstanceState)
         binding = FragmentMainBinding.inflate(inflater, container, false)
         initDagger()
         initVariables()
-        initBinding()
         createFab()
         initListeners()
+        initBinding()
         return binding.root
     }
 
@@ -51,12 +52,13 @@ class MainFragment : Fragment() {
         mainActivity = activity as MainActivity
         viewModel = ViewModelProviders.of(this).get(MainFragmentViewModel::class.java)
         navController = findNavController()
-        notesAdapter = NotesRvAdapter(viewModel.notesAdapter, lifecycle) {
+        notesAdapter = NotesRvAdapter(viewModel.notesAdapter) {
             navController.navigate(MainFragmentDirections.actionMainFragmentToNoteEditorFragment(it))
         }
     }
 
-    private fun initListeners() {
+    override fun initListeners() {
+        super.initListeners()
         fab.setOnClickListener {
             navController.navigate(
                 MainFragmentDirections.actionMainFragmentToNoteEditorFragment(null)
@@ -78,14 +80,13 @@ class MainFragment : Fragment() {
         fab = FloatingActionButton(mainActivity).apply {
             setImageDrawable(ContextCompat.getDrawable(mainActivity, R.drawable.ic_add_black_24dp))
         }
-        fabLayoutParams =
-            LayoutParams(
-                LayoutParams.WRAP_CONTENT,
-                LayoutParams.WRAP_CONTENT
-            ).apply {
-                gravity = Gravity.END or Gravity.BOTTOM
-                setMargins(displayMetricsHelper.dpToPx(fabMargins))
-            }
+        fabLayoutParams = LayoutParams(
+            LayoutParams.WRAP_CONTENT,
+            LayoutParams.WRAP_CONTENT
+        ).apply {
+            gravity = Gravity.END or Gravity.BOTTOM
+            setMargins(displayMetricsHelper.dpToPx(fabMargins))
+        }
     }
 
     override fun onStart() {
@@ -98,4 +99,8 @@ class MainFragment : Fragment() {
         super.onStop()
     }
 
+    override fun onDestroyView() {
+        notesAdapter.onDestroyView()
+        super.onDestroyView()
+    }
 }

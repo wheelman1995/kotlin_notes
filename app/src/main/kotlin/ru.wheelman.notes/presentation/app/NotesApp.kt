@@ -10,7 +10,7 @@ fun <T : Any> T.logd(msg: Any?) = Log.d(this::class.simpleName, " $msg")
 class NotesApp : Application() {
 
     internal companion object {
-        lateinit var appComponent: AppComponent
+        internal lateinit var appComponent: AppComponent
     }
 
     override fun onCreate() {
@@ -20,7 +20,7 @@ class NotesApp : Application() {
 
     private fun initDagger() {
         appComponent = DaggerAppComponent.builder()
-            .notesApp(this)
+            .app(this)
             .build()
     }
 

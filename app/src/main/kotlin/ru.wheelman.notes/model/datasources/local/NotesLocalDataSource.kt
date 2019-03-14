@@ -1,4 +1,4 @@
-package ru.wheelman.notes.model.data
+package ru.wheelman.notes.model.datasources.local
 
 import ru.wheelman.notes.di.app.AppScope
 import ru.wheelman.notes.model.entities.Note
@@ -6,7 +6,8 @@ import ru.wheelman.notes.model.entities.Note.Colour
 import javax.inject.Inject
 
 @AppScope
-class NotesLocalDataSource @Inject constructor() : INotesDataSource {
+class NotesLocalDataSource @Inject constructor() :
+    INotesDataSource {
 
     override fun getNotes(): List<Note> = notes
     override fun getNote(noteId: String) = notes.firstOrNull { it.id == noteId }

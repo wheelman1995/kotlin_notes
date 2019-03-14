@@ -1,4 +1,4 @@
-package ru.wheelman.notes.model.data
+package ru.wheelman.notes.model.datasources.local
 
 import ru.wheelman.notes.model.entities.Note
 

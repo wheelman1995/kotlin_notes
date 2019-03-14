@@ -1,31 +1,37 @@
 package ru.wheelman.notes.di.app
 
+import android.app.Application
 import android.content.Context
 import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import ru.wheelman.notes.di.app.AppModule.Binder
-import ru.wheelman.notes.model.data.INotesDataSource
-import ru.wheelman.notes.model.data.NotesLocalDataSource
+import ru.wheelman.notes.model.datasources.local.INotesDataSource
+import ru.wheelman.notes.model.datasources.local.NotesLocalDataSource
+import ru.wheelman.notes.model.datasources.remote.FirestoreDataSource
+import ru.wheelman.notes.model.datasources.remote.RemoteDataSource
 import ru.wheelman.notes.model.repositories.INotesRepository
 import ru.wheelman.notes.model.repositories.NotesRepository
-import ru.wheelman.notes.presentation.app.NotesApp
 
 @Module(includes = [Binder::class])
 class AppModule {
-
-    @Provides
-    @AppScope
-    fun appContext(notesApp: NotesApp): Context = notesApp
 
     @Module
     interface Binder {
 
         @Binds
+        @AppScope
         fun notesDataSource(notesLocalDataSource: NotesLocalDataSource): INotesDataSource
 
         @Binds
+        @AppScope
         fun notesRepository(notesRepository: NotesRepository): INotesRepository
 
+        @Binds
+        @AppScope
+        fun notesRemoteDataSource(firestoreDataSource: FirestoreDataSource): RemoteDataSource
+
+        @Binds
+        @AppScope
+        fun appContext(app: Application): Context
     }
 }

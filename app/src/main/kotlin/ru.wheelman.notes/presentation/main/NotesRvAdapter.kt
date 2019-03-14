@@ -2,9 +2,7 @@ package ru.wheelman.notes.presentation.main
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
 import androidx.recyclerview.widget.RecyclerView
 import ru.wheelman.notes.databinding.ItemNoteBinding
 import ru.wheelman.notes.presentation.main.MainFragmentViewModel.NotesAdapterViewModel
@@ -12,12 +10,10 @@ import ru.wheelman.notes.presentation.main.NotesRvAdapter.ViewHolder
 
 class NotesRvAdapter(
     private val notesAdapterViewModel: NotesAdapterViewModel,
-    private val lifecycle: Lifecycle,
     val onCardClickListener: ((String) -> Unit)? = null
 ) : RecyclerView.Adapter<ViewHolder>(), LifecycleObserver {
 
     init {
-        lifecycle.addObserver(this)
         notesAdapterViewModel.subscribe { notifyDataSetChanged() }
     }
 
@@ -34,9 +30,7 @@ class NotesRvAdapter(
         holder.binding.position = position
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    internal fun unsubscribe() {
-        lifecycle.removeObserver(this)
+    internal fun onDestroyView() {
         notesAdapterViewModel.unsubscribe()
     }
 
