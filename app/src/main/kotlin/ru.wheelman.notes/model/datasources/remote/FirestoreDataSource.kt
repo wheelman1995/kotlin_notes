@@ -1,6 +1,7 @@
 package ru.wheelman.notes.model.datasources.remote
 
 import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -10,17 +11,19 @@ import ru.wheelman.notes.di.app.AppScope
 import ru.wheelman.notes.model.entities.Note
 import ru.wheelman.notes.model.entities.Result
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlin.coroutines.coroutineContext
 
 @AppScope
-class FirestoreDataSource @Inject constructor(private val notesCollection: CollectionReference) :
+class FirestoreDataSource @Inject constructor(private val notesCollection: Provider<CollectionReference>) :
     RemoteDataSource {
 
+    private var registration: ListenerRegistration? = null
     private val allNotesChannel = Channel<Result>(Channel.CONFLATED)
 
     override suspend fun getNoteById(noteId: String): ReceiveChannel<Result> =
         produce { sendChannel ->
-            notesCollection.document(noteId).get()
+            notesCollection.get().document(noteId).get()
                 .addOnSuccessListener { documentSnapshot ->
                     val note = documentSnapshot.toObject(Note::class.java)
                     note?.run {
@@ -34,14 +37,14 @@ class FirestoreDataSource @Inject constructor(private val notesCollection: Colle
 
     override suspend fun saveNote(note: Note): ReceiveChannel<Result> =
         produce { sendChannel ->
-            notesCollection.document(note.id).set(note)
+            notesCollection.get().document(note.id).set(note)
                 .addOnSuccessListener { launch { sendChannel.send(Result.Success(note)) } }
                 .addOnFailureListener { launch { sendChannel.send(Result.Error(it)) } }
         }
 
     override suspend fun subscribeToAllNotes(): ReceiveChannel<Result> {
         launchInChildScope {
-            notesCollection.addSnapshotListener { snapshot, e ->
+            registration = notesCollection.get().addSnapshotListener { snapshot, e ->
                 e?.let {
                     launch { allNotesChannel.send(Result.Error(it)) }
                     return@addSnapshotListener
@@ -53,6 +56,10 @@ class FirestoreDataSource @Inject constructor(private val notesCollection: Colle
             }
         }
         return allNotesChannel
+    }
+
+    override fun unsubscribeFromAllNotes() {
+        registration?.remove()
     }
 
     private suspend fun produce(block: suspend CoroutineScope.(SendChannel<Result>) -> Unit): ReceiveChannel<Result> {

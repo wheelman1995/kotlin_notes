@@ -9,5 +9,6 @@ interface INotesRepository {
     suspend fun getNoteById(noteId: String): ReceiveChannel<Result>
     suspend fun saveNote(note: Note): ReceiveChannel<Result>
     suspend fun subscribeToAllNotes(): ReceiveChannel<Result>
+    fun unsubscribeFromAllNotes()
 
 }

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="fragment"
+            type="ru.wheelman.notes.presentation.auth.AuthFragment" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/b_google_sign_in"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClickListener="@{fragment::signInWithGoogle}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/b_guest_sign_in"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:fontFamily="sans-serif-condensed-medium"
+            android:includeFontPadding="false"
+            android:onClick="@{fragment::signInAsGuest}"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            android:text="@string/sign_in_as_a_guest"
+            android:textAllCaps="false"
+            app:layout_constraintEnd_toEndOf="@+id/b_google_sign_in"
+            app:layout_constraintStart_toStartOf="@+id/b_google_sign_in"
+            app:layout_constraintTop_toBottomOf="@+id/b_google_sign_in" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

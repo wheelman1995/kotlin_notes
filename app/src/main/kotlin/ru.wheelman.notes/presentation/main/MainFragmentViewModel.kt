@@ -42,6 +42,15 @@ class MainFragmentViewModel(private val app: Application) : AbstractViewModel(ap
         notesAdapter.setNewData(notes)
     }
 
+    override fun onCleared() {
+        unsubscribeFromAllNotes()
+        super.onCleared()
+    }
+
+    private fun unsubscribeFromAllNotes() {
+        notesRepository.unsubscribeFromAllNotes()
+    }
+
     inner class NotesAdapterViewModel {
 
         private var notes: List<Note> = listOf()

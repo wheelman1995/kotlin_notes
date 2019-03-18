@@ -38,7 +38,6 @@ class MainFragment : AbstractFragment<MainFragmentViewModel>() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        super.onCreateView(inflater, container, savedInstanceState)
         binding = FragmentMainBinding.inflate(inflater, container, false)
         initDagger()
         initVariables()
