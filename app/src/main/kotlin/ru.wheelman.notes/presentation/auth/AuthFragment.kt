@@ -1,13 +1,8 @@
 package ru.wheelman.notes.presentation.auth
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.telephony.TelephonyManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,39 +11,52 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.material.snackbar.Snackbar
-import dagger.Lazy
+import io.reactivex.Completable
+import io.reactivex.CompletableEmitter
+import io.reactivex.Single
+import io.reactivex.SingleEmitter
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.subjects.CompletableSubject
+import io.reactivex.subjects.SingleSubject
 import ru.wheelman.notes.R
 import ru.wheelman.notes.databinding.FragmentAuthBinding
-import ru.wheelman.notes.model.entities.AuthMode.*
-import ru.wheelman.notes.model.entities.CurrentUser
 import ru.wheelman.notes.presentation.activity.MainActivity
 import ru.wheelman.notes.presentation.app.NotesApp
-import ru.wheelman.notes.presentation.utils.GoogleSignInHelper
-import ru.wheelman.notes.presentation.utils.PreferenceHelper
+import ru.wheelman.notes.presentation.utils.ActivityResult
+import ru.wheelman.notes.presentation.utils.Authenticator
 import javax.inject.Inject
 
 class AuthFragment : Fragment() {
 
     private companion object {
-        private const val RC_SIGN_IN = 8735
         private const val RC_PERMISSION = 5981
     }
 
     @Inject
-    internal lateinit var currentUser: CurrentUser
-    @Inject
-    internal lateinit var appContext: Context
-    @Inject
-    internal lateinit var preferenceHelper: PreferenceHelper
-    @Inject
-    internal lateinit var googleSignInHelper: Lazy<GoogleSignInHelper>
+    internal lateinit var authenticator: Authenticator
     private lateinit var viewModel: AuthFragmentViewModel
     private lateinit var navController: NavController
     private lateinit var binding: FragmentAuthBinding
     private lateinit var mainActivity: MainActivity
+    private val onAuthSucceeded = { goToMainFragment() }
+    private val onAuthFailed: (Throwable) -> Unit = { showSnackbar(it.message) }
+    private lateinit var permissionResultEmitter: CompletableEmitter
+    private val checkPermission: (String) -> Completable = { permission ->
+        CompletableSubject.create { emitter ->
+            permissionResultEmitter = emitter
+            if (permissionGranted(permission)) emitter.onComplete()
+            else requestPermission(permission)
+        }
+    }
+    private lateinit var activityResultEmitter: SingleEmitter<ActivityResult>
+    private val startActivityForResult: (Intent, Int) -> Single<ActivityResult> = { intent, rc ->
+        SingleSubject.create<ActivityResult> { emitter ->
+            activityResultEmitter = emitter
+            startActivityForResult(intent, rc)
+        }
+    }
+    private val disposable = CompositeDisposable()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -58,10 +66,21 @@ class AuthFragment : Fragment() {
         binding = FragmentAuthBinding.inflate(inflater, container, false)
         initDagger()
         initVariables()
-        checkAuth()
+        tryToAuthenticate()
         initBinding()
         hideToolbar()
         return binding.root
+    }
+
+    private fun tryToAuthenticate() {
+        val d = authenticator.tryToAuthenticate(
+            startActivityForResult,
+            checkPermission
+        ).subscribe(
+            onAuthSucceeded,
+            onAuthFailed
+        )
+        disposable.add(d)
     }
 
     private fun hideToolbar() {
@@ -80,64 +99,28 @@ class AuthFragment : Fragment() {
         NotesApp.appComponent.inject(this)
     }
 
-    private fun checkAuth() {
-        when (preferenceHelper.getAuthMode()) {
-            GOOGLE -> tryAuthorizingUserWithGoogle()
-            GUEST -> tryAuthorizingUserAsGuest()
-            UNAUTHORIZED -> return
-        }
-    }
-
-    private fun tryAuthorizingUserWithGoogle() {
-        val lastSignedInAccount = googleSignInHelper.get().lastSignedInAccount
-        if (lastSignedInAccount != null) {
-            authorizeUserWithGoogle(lastSignedInAccount)
-        } else {
-            startActivityForResult(
-                googleSignInHelper.get().client.signInIntent,
-                RC_SIGN_IN
-            )
-        }
-    }
-
-    private fun authorizeUserWithGoogle(account: GoogleSignInAccount) {
-        preferenceHelper.putAuthMode(GOOGLE)
-        currentUser.id = account.id!!
-        goToMainFragment()
-    }
-
     private fun goToMainFragment() {
         navController.navigate(R.id.action_authFragment_to_mainFragment)
     }
 
     fun signInWithGoogle(view: View) {
-        tryAuthorizingUserWithGoogle()
-    }
-
-    private fun tryAuthorizingUserAsGuest() {
-        if (permissionGranted()) {
-            authorizeUserAsGuest()
-        } else {
-            requestPermission()
-        }
-    }
-
-    private fun authorizeUserAsGuest() {
-        preferenceHelper.putAuthMode(GUEST)
-        val telephonyManager =
-            appContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        @SuppressLint("MissingPermission")
-        val deviceId = telephonyManager.deviceId
-        currentUser.id = deviceId
-        goToMainFragment()
+        val d = authenticator.tryAuthorizingUserWithGoogle(startActivityForResult).subscribe(
+            onAuthSucceeded,
+            onAuthFailed
+        )
+        disposable.add(d)
     }
 
     fun signInAsGuest(view: View) {
-        tryAuthorizingUserAsGuest()
+        val d = authenticator.tryAuthorizingUserAsGuest(checkPermission).subscribe(
+            onAuthSucceeded,
+            onAuthFailed
+        )
+        disposable.add(d)
     }
 
-    private fun requestPermission() {
-        requestPermissions(arrayOf(Manifest.permission.READ_PHONE_STATE), RC_PERMISSION)
+    private fun requestPermission(permission: String) {
+        requestPermissions(arrayOf(permission), RC_PERMISSION)
     }
 
     override fun onRequestPermissionsResult(
@@ -147,35 +130,26 @@ class AuthFragment : Fragment() {
     ) {
         if (requestCode == RC_PERMISSION) {
             if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                authorizeUserAsGuest()
+                permissionResultEmitter.onComplete()
             } else {
-                showSnackbar(getString(R.string.phone_permission_denied))
+                permissionResultEmitter.onError(Throwable("the permission was denied"))
             }
         }
     }
 
-    private fun permissionGranted(): Boolean {
+    private fun permissionGranted(permission: String): Boolean {
         return ContextCompat.checkSelfPermission(
             requireContext(),
-            Manifest.permission.READ_PHONE_STATE
+            permission
         ) == PackageManager.PERMISSION_GRANTED
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == RC_SIGN_IN && resultCode == Activity.RESULT_OK) {
-            // The Task returned from this call is always completed, no need to attach a listener.
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            val account = task.result
-            if (account != null) {
-                authorizeUserWithGoogle(account)
-            } else {
-                showSnackbar(getString(R.string.could_not_sign_in_with_google))
-            }
-        }
+        activityResultEmitter.onSuccess(ActivityResult(requestCode, resultCode, data))
     }
 
-    private fun showSnackbar(message: String) {
-        Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG).show()
+    private fun showSnackbar(message: String?) {
+        Snackbar.make(requireView(), message ?: "Unknown error", Snackbar.LENGTH_LONG).show()
     }
 
     private fun initVariables() {
@@ -185,6 +159,8 @@ class AuthFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        disposable.dispose()
+        authenticator.onDestroyView()
         restoreToolbar()
         super.onDestroyView()
     }

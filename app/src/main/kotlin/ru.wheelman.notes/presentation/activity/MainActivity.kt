@@ -12,22 +12,16 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
-import dagger.Lazy
 import ru.wheelman.notes.R
 import ru.wheelman.notes.databinding.ActivityMainBinding
-import ru.wheelman.notes.model.entities.AuthMode.GOOGLE
-import ru.wheelman.notes.model.entities.AuthMode.UNAUTHORIZED
 import ru.wheelman.notes.presentation.app.NotesApp
-import ru.wheelman.notes.presentation.utils.GoogleSignInHelper
-import ru.wheelman.notes.presentation.utils.PreferenceHelper
+import ru.wheelman.notes.presentation.utils.Authenticator
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
 
     @Inject
-    internal lateinit var preferenceHelper: PreferenceHelper
-    @Inject
-    internal lateinit var googleSignInHelper: Lazy<GoogleSignInHelper>
+    internal lateinit var authenticator: Authenticator
     private lateinit var navController: NavController
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MainActivityViewModel
@@ -62,8 +56,7 @@ class MainActivity : AppCompatActivity() {
         }
 
     private fun logout() {
-        if (preferenceHelper.getAuthMode() == GOOGLE) googleSignInHelper.get().signOut()
-        preferenceHelper.putAuthMode(UNAUTHORIZED)
+        authenticator.logout()
         navController.navigate(R.id.to_authFragment)
     }
 
