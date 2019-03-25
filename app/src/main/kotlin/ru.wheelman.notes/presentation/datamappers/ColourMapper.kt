@@ -23,6 +23,16 @@ internal class ColourMapper @Inject constructor(private val context: Context) {
         Colour.BLUE -> R.color.color_blue.resourceIdToColorInt()
     }
 
+    internal fun colourTocolorId(colour: Colour) = when (colour) {
+        Colour.WHITE -> R.color.color_white
+        Colour.VIOLET -> R.color.color_violet
+        Colour.YELLOW -> R.color.color_yellow
+        Colour.RED -> R.color.color_red
+        Colour.PINK -> R.color.color_pink
+        Colour.GREEN -> R.color.color_green
+        Colour.BLUE -> R.color.color_blue
+    }
+
     internal fun colorIdToColour(@ColorRes colour: Int) = when (colour) {
         R.color.color_white -> Colour.WHITE
         R.color.color_violet -> Colour.VIOLET

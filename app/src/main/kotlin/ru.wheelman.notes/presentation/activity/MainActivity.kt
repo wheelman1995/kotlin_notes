@@ -15,7 +15,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import ru.wheelman.notes.R
 import ru.wheelman.notes.databinding.ActivityMainBinding
 import ru.wheelman.notes.presentation.app.NotesApp
-import ru.wheelman.notes.presentation.utils.Authenticator
+import ru.wheelman.notes.presentation.auth.Authenticator
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {

@@ -2,15 +2,14 @@ package ru.wheelman.notes.presentation.noteeditor
 
 import android.app.Application
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import org.jetbrains.anko.support.v4.alert
+import ru.wheelman.notes.R
 import ru.wheelman.notes.databinding.FragmentNoteEditorBinding
 import ru.wheelman.notes.presentation.abstraction.AbstractFragment
 import ru.wheelman.notes.presentation.activity.MainActivity
@@ -36,10 +35,15 @@ class NoteEditorFragment :
     ): View? {
         binding = FragmentNoteEditorBinding.inflate(inflater, container, false)
         initDagger()
+        initUi()
         initVariables()
         initListeners()
         initBinding()
         return binding.root
+    }
+
+    private fun initUi() {
+        setHasOptionsMenu(true)
     }
 
     override fun initListeners() {
@@ -53,14 +57,44 @@ class NoteEditorFragment :
         binding.viewModel = viewModel
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.note_editor_menu, menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
-            android.R.id.home -> navController.navigateUp()
+            android.R.id.home -> {
+                navController.navigateUp()
+                true
+            }
+            R.id.delete_note -> {
+                showNoteDeletionDialog()
+                true
+            }
+            R.id.color_picker -> {
+                togglePalette()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
 
+    private fun showNoteDeletionDialog() {
+        alert {
+            messageResource = R.string.delete_dialog_message
+            negativeButton(R.string.delete_dialog_cancel) { }
+            positiveButton(R.string.delete_dialog_ok) { viewModel.deleteNote { navController.navigateUp() } }
+        }.show()
+    }
+
+    fun togglePalette() {
+        if (binding.cpv.isOpen) {
+            binding.cpv.close()
+        } else {
+            binding.cpv.open()
+        }
+    }
+
     private fun initVariables() {
-        setHasOptionsMenu(true)
         viewModel = ViewModelProviders.of(this, Factory(app, args.noteId))
             .get(NoteEditorFragmentViewModel::class.java)
         navController = findNavController()

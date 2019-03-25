@@ -42,6 +42,13 @@ class FirestoreDataSource @Inject constructor(private val notesCollection: Provi
                 .addOnFailureListener { launch { sendChannel.send(Result.Error(it)) } }
         }
 
+    override suspend fun removeNote(noteId: String): ReceiveChannel<Result> =
+        produce { sendChannel ->
+            notesCollection.get().document(noteId).delete()
+                .addOnSuccessListener { launch { sendChannel.send(Result.Success(noteId)) } }
+                .addOnFailureListener { launch { sendChannel.send(Result.Error(it)) } }
+        }
+
     override suspend fun subscribeToAllNotes(): ReceiveChannel<Result> {
         launchInChildScope {
             registration = notesCollection.get().addSnapshotListener { snapshot, e ->

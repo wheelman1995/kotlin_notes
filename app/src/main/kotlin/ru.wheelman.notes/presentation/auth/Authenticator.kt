@@ -1,4 +1,4 @@
-package ru.wheelman.notes.presentation.utils
+package ru.wheelman.notes.presentation.auth
 
 import android.Manifest.permission.READ_PHONE_STATE
 import android.annotation.SuppressLint
@@ -16,6 +16,7 @@ import ru.wheelman.notes.R
 import ru.wheelman.notes.di.app.AppScope
 import ru.wheelman.notes.model.entities.AuthMode.*
 import ru.wheelman.notes.model.entities.CurrentUser
+import ru.wheelman.notes.presentation.utils.PreferenceHelper
 import javax.inject.Inject
 
 @AppScope

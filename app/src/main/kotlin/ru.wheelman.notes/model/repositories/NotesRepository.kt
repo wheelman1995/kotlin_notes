@@ -23,4 +23,7 @@ class NotesRepository @Inject constructor(private val remoteDataSource: RemoteDa
     override fun unsubscribeFromAllNotes() {
         remoteDataSource.unsubscribeFromAllNotes()
     }
+
+    override suspend fun removeNote(noteId: String): ReceiveChannel<Result> =
+        remoteDataSource.removeNote(noteId)
 }

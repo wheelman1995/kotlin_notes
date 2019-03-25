@@ -5,8 +5,6 @@ import android.content.Context
 import dagger.Binds
 import dagger.Module
 import ru.wheelman.notes.di.app.AppModule.Binder
-import ru.wheelman.notes.model.datasources.local.INotesDataSource
-import ru.wheelman.notes.model.datasources.local.NotesLocalDataSource
 import ru.wheelman.notes.model.datasources.remote.FirestoreDataSource
 import ru.wheelman.notes.model.datasources.remote.RemoteDataSource
 import ru.wheelman.notes.model.repositories.INotesRepository
@@ -17,10 +15,6 @@ class AppModule {
 
     @Module
     interface Binder {
-
-        @Binds
-        @AppScope
-        fun notesDataSource(notesLocalDataSource: NotesLocalDataSource): INotesDataSource
 
         @Binds
         @AppScope

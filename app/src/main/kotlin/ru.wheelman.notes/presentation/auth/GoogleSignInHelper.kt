@@ -1,4 +1,4 @@
-package ru.wheelman.notes.presentation.utils
+package ru.wheelman.notes.presentation.auth
 
 import android.content.Context
 import com.google.android.gms.auth.api.signin.GoogleSignIn

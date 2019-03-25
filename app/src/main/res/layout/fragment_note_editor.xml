@@ -4,20 +4,25 @@
 
     <data>
 
+        <import type="ru.wheelman.notes.model.entities.Note.Colour" />
         <variable
             name="viewModel"
             type="ru.wheelman.notes.presentation.noteeditor.NoteEditorFragmentViewModel" />
 
-        <variable
-            name="textWatcher"
-            type="android.text.TextWatcher" />
     </data>
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/ll_fragment_note_editor"
         android:layout_width="match_parent"
+        android:background="@{viewModel.backgroundColor}"
         android:layout_height="match_parent"
         android:orientation="vertical">
+
+        <ru.wheelman.notes.presentation.customviews.ColorPickerView
+            android:id="@+id/cpv"
+            onColorClickListener="@{viewModel::onColorViewClick}"
+            android:layout_width="match_parent"
+            android:layout_height="56dp" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"

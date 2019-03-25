@@ -11,4 +11,5 @@ interface INotesRepository {
     suspend fun subscribeToAllNotes(): ReceiveChannel<Result>
     fun unsubscribeFromAllNotes()
 
+    suspend fun removeNote(noteId: String): ReceiveChannel<Result>
 }

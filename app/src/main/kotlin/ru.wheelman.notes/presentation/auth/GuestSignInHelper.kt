@@ -1,4 +1,4 @@
-package ru.wheelman.notes.presentation.utils
+package ru.wheelman.notes.presentation.auth
 
 import android.Manifest.permission.READ_PHONE_STATE
 import android.content.Context

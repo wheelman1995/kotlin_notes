@@ -32,14 +32,12 @@ class MainFragmentViewModel(private val app: Application) : AbstractViewModel(ap
             val notesChannel = notesRepository.subscribeToAllNotes()
             while (true) {
                 val result = notesChannel.receive()
-                processResult(result)
+                processResult(result) {
+                    val notes = it as List<Note>
+                    notesAdapter.setNewData(notes)
+                }
             }
         }
-    }
-
-    override fun onSuccess(data: Any) {
-        val notes = data as List<Note>
-        notesAdapter.setNewData(notes)
     }
 
     override fun onCleared() {

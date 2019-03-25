@@ -16,11 +16,9 @@ abstract class AbstractViewModel(private val app: Application) : AndroidViewMode
         _showError.value = app.getString(R.string.something_went_wrong)
     }
 
-    protected abstract fun onSuccess(data: Any)
-
-    protected fun processResult(result: Result) {
+    protected fun processResult(result: Result, onResultSuccess: (Any) -> Unit) {
         when (result) {
-            is Result.Success<*> -> onSuccess(result.data)
+            is Result.Success<*> -> onResultSuccess(result.data)
             is Result.Error -> onError()
         }
     }

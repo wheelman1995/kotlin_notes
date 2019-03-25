@@ -10,5 +10,5 @@ interface RemoteDataSource {
     suspend fun saveNote(note: Note): ReceiveChannel<Result>
     suspend fun subscribeToAllNotes(): ReceiveChannel<Result>
     fun unsubscribeFromAllNotes()
-
+    suspend fun removeNote(noteId: String): ReceiveChannel<Result>
 }

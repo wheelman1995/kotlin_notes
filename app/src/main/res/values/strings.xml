@@ -5,4 +5,9 @@
     <string name="could_not_sign_in_with_google">Could not sign in with google!</string>
     <string name="phone_permission_denied">You can not sign in as a guest without granting phone permission!</string>
     <string name="logout">logout</string>
+    <string name="color_picker">color_picker</string>
+    <string name="delete_note">delete note</string>
+    <string name="delete_dialog_message">Are you sure you want to delete this note?</string>
+    <string name="delete_dialog_cancel">No</string>
+    <string name="delete_dialog_ok">Yes</string>
 </resources>

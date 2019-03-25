@@ -1,4 +1,4 @@
-package ru.wheelman.notes.presentation.utils
+package ru.wheelman.notes.presentation.auth
 
 import android.content.Intent
 

@@ -23,8 +23,6 @@ import ru.wheelman.notes.R
 import ru.wheelman.notes.databinding.FragmentAuthBinding
 import ru.wheelman.notes.presentation.activity.MainActivity
 import ru.wheelman.notes.presentation.app.NotesApp
-import ru.wheelman.notes.presentation.utils.ActivityResult
-import ru.wheelman.notes.presentation.utils.Authenticator
 import javax.inject.Inject
 
 class AuthFragment : Fragment() {
@@ -145,7 +143,13 @@ class AuthFragment : Fragment() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        activityResultEmitter.onSuccess(ActivityResult(requestCode, resultCode, data))
+        activityResultEmitter.onSuccess(
+            ActivityResult(
+                requestCode,
+                resultCode,
+                data
+            )
+        )
     }
 
     private fun showSnackbar(message: String?) {
