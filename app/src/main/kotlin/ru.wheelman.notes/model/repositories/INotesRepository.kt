@@ -6,10 +6,8 @@ import ru.wheelman.notes.model.entities.Result
 
 interface INotesRepository {
 
-    suspend fun getNoteById(noteId: String): ReceiveChannel<Result>
-    suspend fun saveNote(note: Note): ReceiveChannel<Result>
+    suspend fun getNoteById(noteId: String): Result
+    suspend fun saveNote(note: Note): Result
     suspend fun subscribeToAllNotes(): ReceiveChannel<Result>
-    fun unsubscribeFromAllNotes()
-
-    suspend fun removeNote(noteId: String): ReceiveChannel<Result>
+    suspend fun removeNote(noteId: String): Result
 }

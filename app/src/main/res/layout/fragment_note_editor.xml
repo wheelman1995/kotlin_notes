@@ -33,7 +33,6 @@
                 android:id="@+id/tiet_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:afterTextChanged="@{() -> viewModel.afterTextChanged()}"
                 android:text="@={viewModel.title}"
                 tools:text="title" />
 
@@ -48,7 +47,6 @@
                 android:id="@+id/tiet_body"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:afterTextChanged="@{() -> viewModel.afterTextChanged()}"
                 android:text="@={viewModel.body}"
                 tools:text="body" />
 

@@ -11,19 +11,15 @@ import javax.inject.Inject
 class NotesRepository @Inject constructor(private val remoteDataSource: RemoteDataSource) :
     INotesRepository {
 
-    override suspend fun getNoteById(noteId: String): ReceiveChannel<Result> =
+    override suspend fun getNoteById(noteId: String): Result =
         remoteDataSource.getNoteById(noteId)
 
-    override suspend fun saveNote(note: Note): ReceiveChannel<Result> =
+    override suspend fun saveNote(note: Note): Result =
         remoteDataSource.saveNote(note)
 
     override suspend fun subscribeToAllNotes(): ReceiveChannel<Result> =
         remoteDataSource.subscribeToAllNotes()
 
-    override fun unsubscribeFromAllNotes() {
-        remoteDataSource.unsubscribeFromAllNotes()
-    }
-
-    override suspend fun removeNote(noteId: String): ReceiveChannel<Result> =
+    override suspend fun removeNote(noteId: String): Result =
         remoteDataSource.removeNote(noteId)
 }

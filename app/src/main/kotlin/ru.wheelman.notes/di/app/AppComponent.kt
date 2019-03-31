@@ -8,6 +8,7 @@ import ru.wheelman.notes.presentation.activity.MainActivity
 import ru.wheelman.notes.presentation.auth.AuthFragment
 import ru.wheelman.notes.presentation.auth.AuthFragmentViewModel
 import ru.wheelman.notes.presentation.customviews.ColorPickerView
+import ru.wheelman.notes.presentation.datamappers.ColourMapper
 import ru.wheelman.notes.presentation.main.MainFragment
 import ru.wheelman.notes.presentation.main.MainFragmentViewModel
 import ru.wheelman.notes.presentation.noteeditor.NoteEditorFragment
@@ -25,6 +26,7 @@ interface AppComponent {
     fun inject(authFragment: AuthFragment)
     fun inject(authFragmentViewModel: AuthFragmentViewModel)
     fun inject(colorPickerView: ColorPickerView)
+    fun getColourMapper(): ColourMapper
 
     @Component.Builder
     interface Builder : AbstractBuilder<AppComponent> {

@@ -9,7 +9,7 @@ import ru.wheelman.notes.model.entities.Note.Colour
 import javax.inject.Inject
 
 @AppScope
-internal class ColourMapper @Inject constructor(private val context: Context) {
+class ColourMapper @Inject constructor(private val context: Context) {
 
     private fun Int.resourceIdToColorInt() = ContextCompat.getColor(context, this)
 

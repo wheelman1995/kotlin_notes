@@ -12,6 +12,7 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
+import org.jetbrains.anko.alert
 import ru.wheelman.notes.R
 import ru.wheelman.notes.databinding.ActivityMainBinding
 import ru.wheelman.notes.presentation.app.NotesApp
@@ -49,11 +50,20 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem?) =
         when (item?.itemId) {
             R.id.logout -> {
-                logout()
+                showLogoutDialog()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
+
+    private fun showLogoutDialog() {
+        alert {
+            titleResource = R.string.logout_dialog_title
+            messageResource = R.string.logout_dialog_message
+            positiveButton(R.string.logout_dialog_ok) { logout() }
+            negativeButton(R.string.logout_dialog_cancel) { }
+        }.show()
+    }
 
     private fun logout() {
         authenticator.logout()

@@ -1,6 +1,5 @@
 package ru.wheelman.notes.presentation.noteeditor
 
-import android.app.Application
 import android.os.Bundle
 import android.view.*
 import androidx.lifecycle.Observer
@@ -15,13 +14,10 @@ import ru.wheelman.notes.presentation.abstraction.AbstractFragment
 import ru.wheelman.notes.presentation.activity.MainActivity
 import ru.wheelman.notes.presentation.app.NotesApp
 import ru.wheelman.notes.presentation.noteeditor.NoteEditorFragmentViewModel.Factory
-import javax.inject.Inject
 
 class NoteEditorFragment :
     AbstractFragment<NoteEditorFragmentViewModel>() {
 
-    @Inject
-    internal lateinit var app: Application
     private lateinit var binding: FragmentNoteEditorBinding
     private val args: NoteEditorFragmentArgs by navArgs()
     private lateinit var navController: NavController
@@ -51,6 +47,7 @@ class NoteEditorFragment :
         viewModel.label.observe(this, Observer {
             mainActivity.supportActionBar?.title = it
         })
+        lifecycle.addObserver(viewModel)
     }
 
     private fun initBinding() {
@@ -95,13 +92,18 @@ class NoteEditorFragment :
     }
 
     private fun initVariables() {
-        viewModel = ViewModelProviders.of(this, Factory(app, args.noteId))
-            .get(NoteEditorFragmentViewModel::class.java)
         navController = findNavController()
+        viewModel = ViewModelProviders.of(this, Factory(requireActivity().application, args.noteId))
+            .get(NoteEditorFragmentViewModel::class.java)
         mainActivity = activity as MainActivity
     }
 
     private fun initDagger() {
         NotesApp.appComponent.inject(this)
+    }
+
+    override fun onDestroyView() {
+        lifecycle.removeObserver(viewModel)
+        super.onDestroyView()
     }
 }

@@ -2,37 +2,34 @@ package ru.wheelman.notes.presentation.noteeditor
 
 import android.app.Application
 import androidx.databinding.ObservableField
-import androidx.databinding.ObservableInt
 import androidx.lifecycle.*
+import androidx.lifecycle.Lifecycle.Event.ON_STOP
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import ru.wheelman.notes.model.entities.Note
 import ru.wheelman.notes.model.repositories.INotesRepository
 import ru.wheelman.notes.presentation.abstraction.AbstractViewModel
 import ru.wheelman.notes.presentation.app.NotesApp
 import ru.wheelman.notes.presentation.app.logd
-import ru.wheelman.notes.presentation.datamappers.ColourMapper
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 
 class NoteEditorFragmentViewModel(private val app: Application, noteId: String?) :
-    AbstractViewModel(app) {
+    AbstractViewModel(app), LifecycleObserver {
 
     @Inject
     internal lateinit var notesRepository: INotesRepository
-    @Inject
-    internal lateinit var colourMapper: ColourMapper
     val title: ObservableField<String> = ObservableField()
     val body: ObservableField<String> = ObservableField()
-    val backgroundColor = ObservableInt()
     private val _label = MutableLiveData<String>()
     internal val label: LiveData<String> = _label
-    private var note: Note = Note()
+    private var note: Note? = Note()
         set(value) {
             field = value
-            mapNote(value)
+            value?.let { mapNote(value) }
         }
-
+    val backgroundColor = ObservableField<Note.Colour>(note!!.colour)
     private val sdf = SimpleDateFormat("yyyy/MMM/d HH:mm:ss", Locale.getDefault())
 
     init {
@@ -43,9 +40,7 @@ class NoteEditorFragmentViewModel(private val app: Application, noteId: String?)
     private fun loadNote(noteId: String?) {
         noteId?.let {
             viewModelScope.launch {
-                val channel = notesRepository.getNoteById(noteId)
-                val result = channel.receive()
-                processResult(result) {
+                processResult(notesRepository.getNoteById(noteId)) {
                     val note = it as Note
                     this@NoteEditorFragmentViewModel.note = note
                 }
@@ -54,11 +49,7 @@ class NoteEditorFragmentViewModel(private val app: Application, noteId: String?)
     }
 
     fun onColorViewClick(colour: Note.Colour) {
-        logd("onColorViewClick")
-        if (note.colour != colour) {
-            note = note.copy(colour = colour)
-            saveNote()
-        }
+        backgroundColor.set(colour)
     }
 
     private fun initDagger() {
@@ -69,36 +60,40 @@ class NoteEditorFragmentViewModel(private val app: Application, noteId: String?)
         title.set(note.title)
         body.set(note.body)
         _label.value = sdf.format(note.lastChanged)
-        backgroundColor.set(colourMapper.colourToResource(note.colour))
+        backgroundColor.set(note.colour)
     }
 
-    private fun reverseMapNote(): Note {
+    private fun reverseMapNote(): Note? {
         val title = title.get() ?: String()
         val body = body.get() ?: String()
-        return note.copy(title = title, body = body)
+        val colour = backgroundColor.get() ?: Note.Colour.WHITE
+        return note?.copy(title = title, body = body, colour = colour)
     }
 
-    private fun saveNote() {
-        viewModelScope.launch {
-            note.lastChanged = Date()
-            notesRepository.saveNote(note)
-        }
-    }
-
-    fun afterTextChanged() {
+    @OnLifecycleEvent(ON_STOP)
+    fun saveNote() {
+        logd("saveNote")
         val newNote = reverseMapNote()
-        if (newNote != note) {
-            note = newNote
-            saveNote()
+        newNote?.let {
+            if (newNote != note) {
+                newNote.lastChanged = Date()
+                note = newNote
+                GlobalScope.launch {
+                    notesRepository.saveNote(newNote)
+                }
+            }
         }
     }
 
     fun deleteNote(onSuccess: () -> Unit) {
-        logd("deleteNote")
-        viewModelScope.launch {
-            val channel = notesRepository.removeNote(note.id)
-            val result = channel.receive()
-            processResult(result) { onSuccess() }
+        val localNote = note
+        localNote?.let {
+            viewModelScope.launch {
+                processResult(notesRepository.removeNote(localNote.id)) {
+                    note = null
+                    onSuccess()
+                }
+            }
         }
     }
 

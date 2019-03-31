@@ -2,26 +2,27 @@ package ru.wheelman.notes.presentation.main
 
 import android.app.Application
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.launch
 import ru.wheelman.notes.model.entities.Note
+import ru.wheelman.notes.model.entities.Result
 import ru.wheelman.notes.model.repositories.INotesRepository
 import ru.wheelman.notes.presentation.abstraction.AbstractViewModel
 import ru.wheelman.notes.presentation.app.NotesApp
-import ru.wheelman.notes.presentation.datamappers.ColourMapper
 import javax.inject.Inject
 
 class MainFragmentViewModel(private val app: Application) : AbstractViewModel(app) {
-
-    @Inject
-    internal lateinit var notesRepository: INotesRepository
-    @Inject
-    internal lateinit var colourMapper: ColourMapper
-    internal val notesAdapter: NotesAdapterViewModel = NotesAdapterViewModel()
 
     init {
         initDagger()
         subscribeToAllNotes()
     }
+
+    @Inject
+    internal lateinit var notesRepository: INotesRepository
+    internal val notesAdapter: NotesAdapterViewModel = NotesAdapterViewModel()
+    private lateinit var notesChannel: ReceiveChannel<Result>
 
     private fun initDagger() {
         NotesApp.appComponent.inject(this)
@@ -29,9 +30,8 @@ class MainFragmentViewModel(private val app: Application) : AbstractViewModel(ap
 
     private fun subscribeToAllNotes() {
         viewModelScope.launch {
-            val notesChannel = notesRepository.subscribeToAllNotes()
-            while (true) {
-                val result = notesChannel.receive()
+            notesChannel = notesRepository.subscribeToAllNotes()
+            notesChannel.consumeEach { result ->
                 processResult(result) {
                     val notes = it as List<Note>
                     notesAdapter.setNewData(notes)
@@ -41,12 +41,8 @@ class MainFragmentViewModel(private val app: Application) : AbstractViewModel(ap
     }
 
     override fun onCleared() {
-        unsubscribeFromAllNotes()
+        notesChannel.cancel()
         super.onCleared()
-    }
-
-    private fun unsubscribeFromAllNotes() {
-        notesRepository.unsubscribeFromAllNotes()
     }
 
     inner class NotesAdapterViewModel {
@@ -72,8 +68,7 @@ class MainFragmentViewModel(private val app: Application) : AbstractViewModel(ap
         fun getNoteIdForPosition(position: Int) = notes[position].id
         fun getTitle(position: Int) = notes[position].title
 
-        fun getBackgroundColor(position: Int): Int =
-            colourMapper.colourToResource(notes[position].colour)
+        fun getBackgroundColor(position: Int) = notes[position].colour
 
         fun getBody(position: Int) = notes[position].body
         internal fun getItemCount() = notes.size

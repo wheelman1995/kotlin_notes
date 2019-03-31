@@ -1,82 +1,59 @@
 package ru.wheelman.notes.model.datasources.remote
 
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.ListenerRegistration
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.Channel.Factory.CONFLATED
 import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.launch
 import ru.wheelman.notes.di.app.AppScope
 import ru.wheelman.notes.model.entities.Note
 import ru.wheelman.notes.model.entities.Result
 import javax.inject.Inject
 import javax.inject.Provider
-import kotlin.coroutines.coroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 @AppScope
 class FirestoreDataSource @Inject constructor(private val notesCollection: Provider<CollectionReference>) :
     RemoteDataSource {
 
-    private var registration: ListenerRegistration? = null
-    private val allNotesChannel = Channel<Result>(Channel.CONFLATED)
+    override suspend fun getNoteById(noteId: String): Result = suspendCoroutine { continuation ->
+        notesCollection.get().document(noteId).get()
+            .addOnSuccessListener { documentSnapshot ->
+                val note = documentSnapshot.toObject(Note::class.java)
+                continuation.resume(
+                    if (note == null) Result.Error(Throwable("note conversion error"))
+                    else Result.Success(note)
+                )
+            }
+            .addOnFailureListener {
+                continuation.resume(Result.Error(it))
+            }
+    }
 
-    override suspend fun getNoteById(noteId: String): ReceiveChannel<Result> =
-        produce { sendChannel ->
-            notesCollection.get().document(noteId).get()
-                .addOnSuccessListener { documentSnapshot ->
-                    val note = documentSnapshot.toObject(Note::class.java)
-                    note?.run {
-                        launch { sendChannel.send(Result.Success(this@run)) }
-                    }
-                }
-                .addOnFailureListener {
-                    launch { sendChannel.send(Result.Error(it)) }
-                }
-        }
+    override suspend fun saveNote(note: Note): Result = suspendCoroutine { continuation ->
+        notesCollection.get().document(note.id).set(note)
+            .addOnSuccessListener { continuation.resume(Result.Success(note)) }
+            .addOnFailureListener { continuation.resume(Result.Error(it)) }
+    }
 
-    override suspend fun saveNote(note: Note): ReceiveChannel<Result> =
-        produce { sendChannel ->
-            notesCollection.get().document(note.id).set(note)
-                .addOnSuccessListener { launch { sendChannel.send(Result.Success(note)) } }
-                .addOnFailureListener { launch { sendChannel.send(Result.Error(it)) } }
-        }
+    override suspend fun removeNote(noteId: String): Result = suspendCoroutine { continuation ->
+        notesCollection.get().document(noteId).delete()
+            .addOnSuccessListener { continuation.resume(Result.Success(noteId)) }
+            .addOnFailureListener { continuation.resume(Result.Error(it)) }
+    }
 
-    override suspend fun removeNote(noteId: String): ReceiveChannel<Result> =
-        produce { sendChannel ->
-            notesCollection.get().document(noteId).delete()
-                .addOnSuccessListener { launch { sendChannel.send(Result.Success(noteId)) } }
-                .addOnFailureListener { launch { sendChannel.send(Result.Error(it)) } }
-        }
-
-    override suspend fun subscribeToAllNotes(): ReceiveChannel<Result> {
-        launchInChildScope {
-            registration = notesCollection.get().addSnapshotListener { snapshot, e ->
+    override suspend fun subscribeToAllNotes(): ReceiveChannel<Result> =
+        Channel<Result>(CONFLATED).apply {
+            val registration = notesCollection.get().addSnapshotListener { snapshot, e ->
                 e?.let {
-                    launch { allNotesChannel.send(Result.Error(it)) }
+                    offer(Result.Error(it))
                     return@addSnapshotListener
                 }
                 snapshot?.let {
                     val notes = snapshot.documents.mapNotNull { it.toObject(Note::class.java) }
-                    launch { allNotesChannel.send(Result.Success(notes)) }
-                }
+                    offer(Result.Success(notes))
+                } ?: offer(Result.Error(Throwable("No data received")))
             }
+            invokeOnClose { registration.remove() }
         }
-        return allNotesChannel
-    }
-
-    override fun unsubscribeFromAllNotes() {
-        registration?.remove()
-    }
-
-    private suspend fun produce(block: suspend CoroutineScope.(SendChannel<Result>) -> Unit): ReceiveChannel<Result> {
-        val channel = Channel<Result>(Channel.CONFLATED)
-        launchInChildScope { block(channel) }
-        return channel
-    }
-
-    private suspend fun launchInChildScope(block: suspend CoroutineScope.() -> Unit) {
-        val childScope = CoroutineScope(coroutineContext)
-        childScope.launch { childScope.block() }
-    }
 }
